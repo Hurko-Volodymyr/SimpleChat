@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SimpleChat.Models
+﻿namespace SimpleChat.Models
 {
     public class User
     {

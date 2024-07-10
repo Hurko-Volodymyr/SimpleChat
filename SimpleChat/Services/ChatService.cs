@@ -1,60 +1,46 @@
 ﻿using SimpleChat.Models;
-using SimpleChat.Models.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using SimpleChat.Models.Abstractions.Repositories;
+using SimpleChat.Models.Abstractions.Services;
 
 namespace SimpleChat.Services
 {
     public class ChatService : IChatService
     {
-        private readonly IChatRepository _chatRepository;
+        private readonly IRepository<Chat> _chatRepository;
 
-        public ChatService(IChatRepository chatRepository)
+        public ChatService(IRepository<Chat> chatRepository)
         {
             _chatRepository = chatRepository;
         }
 
-        public async Task<IEnumerable<Chat>> GetAllChatsAsync()
+        public async Task<Chat> CreateChatAsync(string title, int createdById)
         {
-            return await _chatRepository.GetAllChatsAsync();
-        }
-
-        public async Task<Chat> GetChatByIdAsync(int id)
-        {
-            var chat = await _chatRepository.GetChatByIdAsync(id);
-            if (chat == null)
-            {
-                throw new KeyNotFoundException($"Chat with ID {id} not found.");
-            }
+            var chat = new Chat { Title = title, CreatedById = createdById };
+            await _chatRepository.AddAsync(chat);
+            await _chatRepository.SaveChangesAsync();
             return chat;
         }
 
-        public async Task CreateChatAsync(Chat chat)
+        public async Task<Chat> GetChatByIdAsync(int id) => await _chatRepository.GetByIdAsync(id);
+
+        public async Task<IEnumerable<Chat>> GetAllChatsAsync() => await _chatRepository.GetAllAsync();
+
+        public async Task<Chat> UpdateChatAsync(Chat chat)
         {
-            await _chatRepository.CreateChatAsync(chat);
+            await _chatRepository.UpdateAsync(chat);
+            await _chatRepository.SaveChangesAsync();
+            return chat;
         }
 
-        public async Task UpdateChatAsync(Chat chat)
+        public async Task DeleteChatAsync(int id, int userId)
         {
-            var existingChat = await _chatRepository.GetChatByIdAsync(chat.ChatId);
-            if (existingChat == null)
+            var chat = await _chatRepository.GetByIdAsync(id);
+            if (chat.CreatedById != userId)
             {
-                throw new KeyNotFoundException($"Chat with ID {chat.ChatId} not found.");
+                throw new UnauthorizedAccessException("There are no permissions to do the operation");
             }
-
-            await _chatRepository.UpdateChatAsync(chat);
-        }
-
-        public async Task DeleteChatAsync(int id)
-        {
-            var existingChat = await _chatRepository.GetChatByIdAsync(id);
-            if (existingChat == null)
-            {
-                throw new KeyNotFoundException($"Chat with ID {id} not found.");
-            }
-
-            await _chatRepository.DeleteChatAsync(id);
+            await _chatRepository.DeleteAsync(chat);
+            await _chatRepository.SaveChangesAsync();
         }
     }
 }

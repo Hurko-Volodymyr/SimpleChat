@@ -1,7 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SimpleChat.Models;
-using System.Collections.Generic;
-using System.Reflection.Emit;
 
 namespace SimpleChat.Data
 {
@@ -15,20 +13,30 @@ namespace SimpleChat.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Chat>()
-                .HasOne(c => c.CreatedBy)
-                .WithMany(u => u.CreatedChats)
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.CreatedChats)
+                .WithOne(c => c.CreatedBy)
                 .HasForeignKey(c => c.CreatedById);
 
-            modelBuilder.Entity<Message>()
-                .HasOne(m => m.User)
-                .WithMany(u => u.Messages)
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Messages)
+                .WithOne(m => m.User)
                 .HasForeignKey(m => m.UserId);
 
-            modelBuilder.Entity<Message>()
-                .HasOne(m => m.Chat)
-                .WithMany(c => c.Messages)
+            modelBuilder.Entity<Chat>()
+                .HasMany(c => c.Messages)
+                .WithOne(m => m.Chat)
                 .HasForeignKey(m => m.ChatId);
+
+            modelBuilder.Entity<User>().HasData(
+                new User { UserId = 1, UserName = "User1" },
+                new User { UserId = 2, UserName = "User2" }
+            );
+
+            modelBuilder.Entity<Chat>().HasData(
+                new Chat { ChatId = 1, Title = "General", CreatedById = 1 },
+                new Chat { ChatId = 2, Title = "Random", CreatedById = 2 }
+            );
         }
     }
 
