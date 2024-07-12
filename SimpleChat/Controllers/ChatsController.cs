@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using SimpleChat.Hubs;
-using SimpleChat.Models;
 using SimpleChat.Models.Abstractions.Requests;
 using SimpleChat.Models.Abstractions.Services;
 
@@ -59,7 +58,7 @@ namespace SimpleChat.Controllers
         }
 
         [HttpDelete("chats/{id}")]
-        public async Task<IActionResult> DeleteChat(int id, [FromBody] int userId)
+        public async Task<IActionResult> DeleteChat(int id, [FromQuery] int userId)
         {
             try
             {
@@ -67,9 +66,17 @@ namespace SimpleChat.Controllers
                 await _hubContext.Clients.Group(id.ToString()).SendAsync("DisconnectUsers", usersInChat);
                 return NoContent();
             }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
             catch (UnauthorizedAccessException ex)
             {
-                return Forbid(ex.Message);
+                return StatusCode(StatusCodes.Status403Forbidden, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
     }

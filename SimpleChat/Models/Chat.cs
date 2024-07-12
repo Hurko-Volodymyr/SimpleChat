@@ -6,6 +6,7 @@
         public string Title { get; set; }
         public int CreatedById { get; set; }
         public User CreatedBy { get; set; }
+        public ICollection<User> Members { get; set; }
         public ICollection<Message> Messages { get; set; }
     }
 }

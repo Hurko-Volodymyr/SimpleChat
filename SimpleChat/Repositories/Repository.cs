@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SimpleChat.Data;
 using SimpleChat.Models.Abstractions.Repositories;
+using System.Linq.Expressions;
 
 namespace SimpleChat.Repositories
 {
@@ -37,6 +38,16 @@ namespace SimpleChat.Repositories
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
+        }
+
+        public async Task LoadCollectionAsync<U>(T entity, Expression<Func<T, IEnumerable<U>>> collectionExpression) where U : class
+        {
+            await _context.Entry(entity).Collection(collectionExpression).LoadAsync();
+        }
+
+        public async Task LoadReferenceAsync<U>(T entity, Expression<Func<T, U>> referenceExpression) where U : class
+        {
+            await _context.Entry(entity).Reference(referenceExpression).LoadAsync();
         }
     }
 }

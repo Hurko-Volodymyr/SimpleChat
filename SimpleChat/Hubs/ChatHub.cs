@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
 using SimpleChat.Models.Abstractions.Services;
-using System.Threading.Tasks;
 
 namespace SimpleChat.Hubs
 {
@@ -21,7 +19,7 @@ namespace SimpleChat.Hubs
         public async Task SendMessage(int chatId, int userId, string message)
         {
             _logger.LogInformation($"Received message '{message}' for chat '{chatId}'");
-            var chatMessage = await _messageService.AddMessageAsync(chatId, userId, message);
+            var chatMessage = await _messageService.CreateMessageAsync(chatId, userId, message);
             await Clients.Group(chatId.ToString()).SendAsync("ReceiveMessage", chatMessage);
         }
 

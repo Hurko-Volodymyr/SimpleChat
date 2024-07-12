@@ -1,4 +1,3 @@
-
 using Microsoft.EntityFrameworkCore;
 using SimpleChat.Data;
 using SimpleChat.Hubs;
@@ -7,6 +6,9 @@ using SimpleChat.Models.Abstractions.Repositories;
 using SimpleChat.Models.Abstractions.Services;
 using SimpleChat.Repositories;
 using SimpleChat.Services;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+
 
 namespace SimpleChat
 {
@@ -25,8 +27,15 @@ namespace SimpleChat
             builder.Services.AddScoped<IRepository<Message>, Repository<Message>>();
 
             builder.Services.AddScoped<IChatService, ChatService>();
+            builder.Services.AddScoped<IMessageService, MessageService>();
 
-            builder.Services.AddControllers();
+
+            builder.Services.AddControllers()
+                 .AddJsonOptions(options =>
+                 {
+                     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                 });
+
             builder.Services.AddSignalR();
             builder.Services.AddSwaggerGen();
 

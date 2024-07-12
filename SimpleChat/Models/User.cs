@@ -6,5 +6,6 @@
         public string UserName { get; set; }
         public ICollection<Chat> CreatedChats { get; set; }
         public ICollection<Message> Messages { get; set; }
+        public ICollection<Chat> Chats { get; set; }
     }
 }
