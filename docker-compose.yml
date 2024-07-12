@@ -15,17 +15,18 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: "Development"  
       DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DefaultConnection: "Host=postgres;Port=5432;Database=chatappdb;Username=postgres;Password=mysecretpassword"
 
   postgres:
     image: postgres:latest
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "chatapp"]
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "chatappdb"]
       interval: 5s
       timeout: 5s
       retries: 5
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: mysecretpassword
-      POSTGRES_DB: chatapp
+      POSTGRES_DB: chatappdb
     ports:
       - "5432:5432"

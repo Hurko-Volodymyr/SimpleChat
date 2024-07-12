@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using SimpleChat.Hubs;
+using SimpleChat.Models;
 using SimpleChat.Models.Abstractions.Requests;
 using SimpleChat.Models.Abstractions.Services;
 
@@ -9,10 +12,12 @@ namespace SimpleChat.Controllers
     public class ChatsController : ControllerBase
     {
         private readonly IChatService _chatService;
+        private readonly IHubContext<ChatHub> _hubContext;
 
-        public ChatsController(IChatService chatService)
+        public ChatsController(IChatService chatService, IHubContext<ChatHub> hubContext)
         {
             _chatService = chatService;
+            _hubContext = hubContext;
         }
 
         [HttpPost("chats")]
@@ -58,7 +63,8 @@ namespace SimpleChat.Controllers
         {
             try
             {
-                await _chatService.DeleteChatAsync(id, userId);
+                var usersInChat = await _chatService.DeleteChatAsync(id, userId);
+                await _hubContext.Clients.Group(id.ToString()).SendAsync("DisconnectUsers", usersInChat);
                 return NoContent();
             }
             catch (UnauthorizedAccessException ex)

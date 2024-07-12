@@ -7,10 +7,12 @@ namespace SimpleChat.Services
     public class ChatService : IChatService
     {
         private readonly IRepository<Chat> _chatRepository;
+        private readonly IRepository<Message> _messageRepository;
 
-        public ChatService(IRepository<Chat> chatRepository)
+        public ChatService(IRepository<Chat> chatRepository, IRepository<Message> messageRepository)
         {
             _chatRepository = chatRepository;
+            _messageRepository = messageRepository;
         }
 
         public async Task<Chat> CreateChatAsync(string title, int createdById)
@@ -32,15 +34,22 @@ namespace SimpleChat.Services
             return chat;
         }
 
-        public async Task DeleteChatAsync(int id, int userId)
+
+        public async Task<IEnumerable<int>> DeleteChatAsync(int id, int userId)
         {
             var chat = await _chatRepository.GetByIdAsync(id);
-            if (chat.CreatedById != userId)
+            if (chat == null || chat.CreatedById != userId)
             {
                 throw new UnauthorizedAccessException("There are no permissions to do the operation");
             }
+
+            var usersInChat = await _messageRepository.GetAllAsync();
+            var userIds = usersInChat.Where(m => m.ChatId == id).Select(m => m.UserId).Distinct().ToList();
+
             await _chatRepository.DeleteAsync(chat);
             await _chatRepository.SaveChangesAsync();
+
+            return userIds;
         }
     }
 }
